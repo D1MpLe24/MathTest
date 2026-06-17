@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер: Экзамен по казахскому языку и литературе</title>
+    <style>
+        :root {
+            --bg: #f4f6fa;
+            --panel: #ffffff;
+            --text: #1f2937;
+            --muted: #4b5563;
+            --border: #e5e7eb;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --green-bg: #f0fdf4;
+            --green-border: #22c55e;
+            --green-text: #15803d;
+            --red-bg: #fef2f2;
+            --red-border: #ef4444;
+            --red-text: #b91c1c;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container {
+            width: min(650px, calc(100% - 24px));
+            margin: 30px auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin: 0;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .stats-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 650;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+        }
+        .kbd-hint {
+            display: inline-block;
+            min-width: 24px;
+            padding: 2px 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            text-align: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+        .option-btn:hover:not(:disabled) .kbd-hint {
+            background: #e0f2fe;
+            border-color: #7dd3fc;
+            color: var(--primary);
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        
+        .option-btn.correct {
+            background: var(--green-bg) !important;
+            border-color: var(--green-border) !important;
+            color: var(--green-text) !important;
+            font-weight: 600;
+        }
+        .option-btn.correct .kbd-hint {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: var(--green-text);
+        }
+        .option-btn.wrong {
+            background: var(--red-bg) !important;
+            border-color: var(--red-border) !important;
+            color: var(--red-text) !important;
+        }
+        .option-btn.wrong .kbd-hint {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: var(--red-text);
+        }
+
+        .feedback-panel {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            display: none;
+        }
+        .feedback-panel.correct {
+            display: block;
+            background: var(--green-bg);
+            color: var(--green-text);
+            border-left: 4px solid var(--green-border);
+        }
+        .feedback-panel.wrong {
+            display: block;
+            background: var(--red-bg);
+            color: var(--red-text);
+            border-left: 4px solid var(--red-border);
+        }
+
+        .footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-next {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s;
+        }
+        .btn-next:hover {
+            background: var(--primary-hover);
+        }
+        .kbd-hint-enter {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+        .result-score {
+            font-size: 44px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+        .result-comment {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 25px;
+        }
+        
+        /* Стили для блока логов ошибок */
+        .errors-log-container {
+            text-align: left;
+            margin-top: 30px;
+            border-top: 2px dashed var(--border);
+            padding-top: 25px;
+        }
+        .errors-log-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+        .error-item {
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .error-q {
+            font-weight: 650;
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .error-line {
+            font-size: 14px;
+            margin: 3px 0;
+        }
+        .text-red { color: var(--red-text); font-weight: 500; }
+        .text-green { color: var(--green-text); font-weight: 500; }
+
+        .btn-restart {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .container { margin: 15px auto; }
+            h1 { font-size: 20px; }
+            .card { padding: 16px; border-radius: 12px; }
+            .question-text { font-size: 16px; margin-bottom: 15px; }
+            .option-btn { padding: 12px; font-size: 14px; border-radius: 8px; }
+            .kbd-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Тренажер к экзамену</h1>
+            <p class="subtitle">Математика</p>
+        </header>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="stats-line">
+            <span id="q-counter">Вопрос 0 из 0</span>
+            <span id="score-counter">Правильно: 0</span>
+        </div>
+
+        <main id="quiz-container">
+            <div class="card">
+                <div class="question-text" id="question-box">Загрузка вопроса...</div>
+                <div class="options-list" id="options-box"></div>
+                <div class="feedback-panel" id="feedback-box"></div>
+            </div>
+            <div class="footer-actions">
+                <button class="btn-next" id="next-btn" onclick="nextQuestion()">
+                    Дальше <span class="kbd-hint-enter">Enter</span>
+                </button>
+            </div>
+        </main>
+
+        <div id="result-container" class="card result-screen">
+            <h2>Тестирование завершено!</h2>
+            <div class="result-score" id="final-score">0 / 0</div>
+            <div class="result-comment" id="final-comment">Вы ответили на все вопросы.</div>
+            
+            <button class="btn-restart" onclick="restartQuiz()">
+                Пройти еще раз <span class="kbd-hint-enter">Enter</span>
+            </button>
+
+            <div id="errors-log-box" class="errors-log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const originalDatabase = [
+    {
+        q: "Множество значений независимой переменной, при которых функция принимает точные значения, называется",
+        options: ["областью значения функции", "областью определения функции", "абсолютной вечной", "независимой постоянной", "абсолютной постоянной"],
+        correct: 1
+    },
+    {
+        q: "Значения функции, соответствующие каждому значению независимой переменной из области определения, называются",
+        options: ["областью определения функции", "абсолютной величиной", "независимой постоянной", "абсолютной постоянной", "областью значения  функции"],
+        correct: 4
+    },
+    {
+        q: "Функцию ax^2 + bx + c называют…",
+        options: ["линейной", "нечетной", "четной", "квадратичной", "нелинейной"],
+        correct: 3
+    },
+    {
+        q: "Если решения двух систем уравнений совпадают, то уравнения называются…",
+        options: ["равносильными", "равноправными", "однородными", "совместимыми", "несовместными"],
+        correct: 0
+    },
+    {
+        q: "Величина, остающаяся постоянной при всех условиях, называется…",
+        options: ["относительной постоянной", "абсолютной постоянной", "переменной величиной", "функцией", "переменной величиной"],
+        correct: 1
+    },
+    {
+        q: "Величина, принимающая различные значения, называется…",
+        options: ["переменной величиной", "относительной постоянной", "абсолютной постоянной", "функцией"],
+        correct: 0
+    },
+    {
+        q: "График четной функции симметричен относительно…",
+        options: ["оси ординат", "оси абсцисс", "начало координат", "оси Охz", "оси Охz"],
+        correct: 0
+    },
+    {
+        q: "Множество действительных чисел, обозначается буквой...",
+        options: ["N", "Z", "Q", "D", "R"],
+        correct: 4
+    },
+    {
+        q: "График функции y = sin x называют…",
+        options: ["кривой косинусоиды", "кривой тангенсоида", "кривой котангенсоиды", "кривой синусоиды", "обратной функцией"],
+        correct: 3
+    },
+    {
+        q: "График функции y = cos x называют…",
+        options: ["кривой косинусоиды", "кривой синусоиды", "кривой тангенсоида", "кривой котангенсоиды", "обратной функцией"],
+        correct: 0
+    },
+    {
+        q: "График функции у= tg x называют…",
+        options: ["кривой косинусоиды", "кривой тангенсоида", "кривой котангенсоиды", "кривой синусоиды", "обратной функцией"],
+        correct: 1
+    },
+    {
+        q: "График функции y = ctg x называют…",
+        options: ["кривой котангенсоиды", "кривой тангенсоида", "кривой косинусоиды", "кривой синусоиды", "обратной функцией"],
+        correct: 0
+    },
+    {
+        q: "Найдите область определения функции: y=3x-4",
+        options: ["[0; +inf)", "(-inf; 0)", "(-inf; +inf)", "(3; 4)", "[3; 4]"],
+        correct: 2
+    },
+    {
+        q: "Найдите область определения функции: y = x^2 + 1",
+        options: ["(0; +inf)", "[1; +inf)", "(-inf; +inf)", "(-inf; 0)", "[0; 1]"],
+        correct: 2
+    },
+    {
+        q: "Найдите область определения функции: y = 1/x",
+        options: ["x ≤ 0", "x ≠ 0", "x ≥ 1", "x ≥ 0", "x ≤ 1"],
+        correct: 1
+    },
+    {
+        q: "Найдите область определения функции: y = 1/x-1",
+        options: ["x ≠ 0", "x ≥ 1 ", "x ≠ 1", "x ≤ 1"],
+        correct: 2
+    },
+    {
+        q: "Найдите область определения функции: y = 1/x^2+1",
+        options: ["x ≥ -1", "(-inf; +inf)", "x ≠ ±1", "x > 0", "x < 0"],
+        correct: 1
+    },
+    {
+        q: "Найдите область определения функции: y = √x",
+        options: ["(-inf; +inf)", "(-inf; 0]", "(0; +inf)", "[0; +inf)", "(-inf; 0)"],
+        correct: 3
+    },
+    {
+        q: "Найдите область определения функции: y = √x-1",
+        options: ["(-inf; +inf)", "[1; +inf)", "(1; +inf)", "(-inf; 1)", "(-inf; 1]"],
+        correct: 1
+    },
+    {
+        q: "Найдите область определения функции: y = 2^x",
+        options: ["(2; +inf)", "[2; +inf)", "(-inf; +inf)", "(-inf; 2]", "(-inf; 2)"],
+        correct: 2
+    },
+    {
+        q: "Найдите область определения функции: y = sinx",
+        options: ["[0; +inf)", "(-inf; +inf)", "(0; +inf)", "(-inf; 0)", "(-inf; 0]"],
+        correct: 1
+    },
+    {
+        q: "Вычислите: sin 150°",
+        options: ["√3/2", "0", "1/2", "√3", "√3/3"],
+        correct: 2
+    },
+    {
+        q: "Вычислите: sin2π",
+        options: ["1", "-1", "1/2", "0", "-1/2"],
+        correct: 3
+    },
+    {
+        q: "Вычислите: sin 30° + cos 60°",
+        options: ["0", "1/2", "-1/2", "1", "-1"],
+        correct: 3
+    },
+    {
+        q: "Вычислите: tg 45° + ctg 45°",
+        options: ["1", "2", "0", "√2/2", "-1"],
+        correct: 1
+    },
+    {
+        q: "Вычислите: sin π/6 - tg π/4",
+        options: ["1/2", "-1/2", "0", "1", "-1"],
+        correct: 1
+    },
+    {
+        q: "Вычислите: arcsin 0",
+        options: ["π", "π/2", "0", "π/6", "2π/3"],
+        correct: 2
+    },
+    {
+        q: "Вычислите: sinx = 0",
+        options: ["x= π/2 + πn, n ∈ Z", "x= -πn, n ∈ Z", "x= πn, n ∈ Z", "x= ±π/4 = πn, n ∈ Z", "x= π/2 + 2πn, n ∈ Z"],
+        correct: 2
+    },
+    {
+        q: "Вычислите: cosx = 0",
+        options: ["x= πn, n ∈ Z", "x= π/2 + πn, n ∈ Z", "x= -πn, n ∈ Z", "x= ±π/3 + 2πn, n ∈ Z", "x= π/4 + 2πn, n ∈ Z"],
+        correct: 1
+    },
+    {
+        q: "Решите уравнение: sin x = 1",
+        options: ["x= πn, n ∈ Z", "x= π/2 + πn, n ∈ Z", "x= π/2 + 2πn, n ∈ Z", "x= -π/2 + 2πn, n ∈ Z", "x= -π/2 + πn, n ∈ Z"],
+        correct: 2
+    },
+    {
+        q: "Решите уравнение: sin x = -1",
+        options: ["x= πn, n ∈ Z", "x= π/2 + πn, n ∈ Z", "x= π/2 + 2πn, n ∈ Z", "x= -π/2 + 2πn, n ∈ Z", "x= -π/2 + πn, n ∈ Z"],
+        correct: 3
+    },
+    {
+        q: "Решите уравнение: cos x = 1",
+        options: ["x= πn, n ∈ Z", "x= π/2 + 2πn, n ∈ Z", "x= 2πn, n ∈ Z", "x= -π/2 + 2πn, n ∈ Z", "x= π/2 + πn, n ∈ Z"],
+        correct: 2
+    },
+    {
+        q: "Решите уравнение: cos x = √3/2",
+        options: ["x= ±π/4 + 2πn, n ∈ Z", "x= ±π/6 + 2πn, n ∈ Z", "x= ±π/6 + πn, n ∈ Z", "x= ±π/4 + πn, n ∈ Z", "x= -πn, n ∈ Z"],
+        correct: 1
+    },
+    {
+        q: "Объем шара равен:",
+        options: ["π * R^2", "4/3 * π * R^3", "Sосн H", "1/3 * π * R^2 * H", "abc"],
+        correct: 1
+    },
+    {
+        q: "Объем прямоугольного параллелепипеда равен:",
+        options: ["a^3", "1/3 * π * R^2", "abc", "π * R^3", "1/3 Sосн H"],
+        correct: 2
+    },
+    {
+        q: "Объем куба с ребром a равен:",
+        options: ["aH", "a^2", "3a^3", "a^3", "∛a"],
+        correct: 3
+    },
+    {
+        q: "Площадь сферы равна:",
+        options: ["πR", "π", "4πR^2", "2πR", "2π"],
+        correct: 2  
+    },
+    {
+        q: "Площадь полной поверхности цилиндра равна:",
+        options: ["2πRH", "πR^2", "2πR(R + H)", "πRl", "2πR"],
+        correct: 2
+    },
+    {
+        q: "Площадь круга равна:",
+        options: ["2πRH", "πR^2", "a^2", "a^3", "R^2"],
+        correct: 1
+    },
+    {
+        q: "Площадь квадрата со стороной a равна:",
+        options: ["4a", "a^3", "a^2", "ab", "a/2"],
+        correct: 2
+    },
+    {
+        q: "Решите уравнение: (1/2)^x = (1/4)^3",
+        options: ["-1/3", "1/3", "5", "6", "-5"],
+        correct: 3
+    },
+    {
+        q: "Решите уравнение: (1/2)^x = 16",
+        options: ["4", "-4", "1/2", "-1/4", "1/4"],
+        correct: 1
+    },
+    {
+        q: "Решите уравнение: (2/3)^x = 16/81",
+        options: ["2/3", "-2/3", "x = 4", "3", "x = -4"],
+        correct: 2
+    },
+    {
+        q: "Решите уравнение: 7^x-2 = 49^1/3",
+        options: ["2 2/3", "2/3 2/3", "1/3", "-2/3", "63"],
+        correct: 0
+    },
+    {
+        q: "Решите уравнение: 3^x = 27^3",
+        options: ["-6", "6", "9", "1/3", "-1/3"],
+        correct: 2
+    },
+    {
+        q: "Решите уравнение: 5^x = 5^4",
+        options: ["1", "1/4", "-1/4", "4", "-4"],
+        correct: 3
+    },
+    {
+        q: "Вычислите интеграл: π/2∫0 cos x dx",
+        options: ["0", "1", "-1", "sin x", "π/2"],
+        correct: 1
+    },
+    {
+        q: "Найдите интеграл: ∫ x^4 dx",
+        options: ["5x^4 + C", "x^5 + C", "1/5 x^5 + C", "x^3/4 x^4 + C", "1"],
+        correct: 2
+    },
+    {
+        q: "Вычислите интеграл: 1∫0 dx",
+        options: ["0", "1", "1/2", "-1/2", "-1"],
+        correct: 1
+    },
+    {
+        q: "Найдите первообразную функции: f(x) = -cos x",
+        options: ["sin x + C", "-sin x + C", "cos x + C", "sin^2 x + C", "-sin^2 x + C"],
+        correct: 1
+    },
+    {
+        q: "Найдите первообразную функции: f(x) = 1 + cos x",
+        options: ["sin x + C", "sin x + C", "x + sin x + C", "cos x -1 + C", "cos x -1 + C"],
+        correct: 2
+    },
+    {
+        q: "Найдите первообразную функции: f(x) = 1 / cos^2 x",
+        options: ["ctg^2 x + C", "tg x + C", "-tg x + C", "sin^2 x + C", "-sin^2 x + C"],
+        correct: 1
+    },
+    {
+        q: "Найдите число x: log_2 x = 0",
+        options: ["x = 2", "x = 0", "x = 1", "x = -1", "x = -2"],
+        correct: 2
+    },
+    {
+        q: "Найдите число x: log_6 x = 2",
+        options: ["x = ⁶√2", "x = 6^2", "x = 2", "x = 2^6", "x = √6"],
+        correct: 1
+    },
+    {
+        q: "Если в каждой точке x интервала (a;b) выполнено условие f'(x) > 0, то функция является…",
+        options: ["убывающей в этом интервале", "четной", "возрастающей в этом интервале", "нечетной", "линейной"],
+        correct: 2
+    },
+    {
+        q: "Если в каждой точке x интервала (a;b) выполнено условие f'(x) < 0, то функция является…",
+        options: ["убывающей в этом интервале", "четной", "возрастающей в этом интервале", "нечетной", "линейной"],
+        correct: 0
+    },
+    {
+        q: "Вычислите: arcsin1 - arcsin(-1)",
+        options: ["1", "-π/2", "π", "-π", "2"],
+        correct: 2
+    },
+    {
+        q: "Вычислите: arcctg(-1)",
+        options: ["π/4", "-π/4", "3π/4", "-π", "π"],
+        correct: 2
+    },
+    {
+        q: "Вычислите: arctg(-1)",
+        options: ["π/4", "-π/4", "-π", "0", "π/2"],
+        correct: 1
+    }
+
+        ];
+
+        let examDatabase = [];
+        let currentIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+        
+        // Массив, в который будем складывать все ошибки
+        let userErrorsLog = [];
+
+        const qCounter = document.getElementById("q-counter");
+        const scoreCounter = document.getElementById("score-counter");
+        const progressFill = document.getElementById("progress-fill");
+        const questionBox = document.getElementById("question-box");
+        const optionsBox = document.getElementById("options-box");
+        const feedbackBox = document.getElementById("feedback-box");
+        const nextBtn = document.getElementById("next-btn");
+        
+        const quizContainer = document.getElementById("quiz-container");
+        const resultContainer = document.getElementById("result-container");
+        const errorsLogBox = document.getElementById("errors-log-box");
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function prepareDatabase() {
+            const databaseCopy = JSON.parse(JSON.stringify(originalDatabase));
+            shuffle(databaseCopy);
+            databaseCopy.forEach(item => {
+                const correctText = item.options[item.correct];
+                shuffle(item.options);
+                item.correct = item.options.indexOf(correctText);
+            });
+            return databaseCopy;
+        }
+
+        function initQuiz() {
+            examDatabase = prepareDatabase();
+            currentIndex = 0;
+            score = 0;
+            userErrorsLog = []; // Очищаем старые логи ошибок
+            errorsLogBox.innerHTML = "";
+            
+            quizContainer.style.display = "block";
+            resultContainer.style.display = "none";
+            document.querySelector(".stats-line").style.display = "flex";
+            document.querySelector(".progress-bar-container").style.display = "block";
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            nextBtn.style.display = "none";
+            feedbackBox.style.display = "none";
+            feedbackBox.className = "feedback-panel";
+            optionsBox.innerHTML = "";
+
+            qCounter.textContent = `Вопрос ${currentIndex + 1} из ${examDatabase.length}`;
+            scoreCounter.textContent = `Правильно: ${score}`;
+            const progressPercent = (currentIndex / examDatabase.length) * 100;
+            progressFill.style.width = `${progressPercent}%`;
+
+            const currentItem = examDatabase[currentIndex];
+            questionBox.textContent = currentItem.q;
+
+            currentItem.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "option-btn";
+                button.innerHTML = `<span class="kbd-hint">${index + 1}</span><span class="opt-text">${option}</span>`;
+                button.onclick = () => selectOption(index, button);
+                optionsBox.appendChild(button);
+            });
+        }
+
+        function selectOption(selectedIndex, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const currentItem = examDatabase[currentIndex];
+            const correctIndex = currentItem.correct;
+            const allButtons = optionsBox.querySelectorAll(".option-btn");
+
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                clickedBtn.classList.add("correct");
+                feedbackBox.textContent = "Правильно! Отличный выбор. 😊";
+                feedbackBox.className = "feedback-panel correct";
+                score++;
+                scoreCounter.textContent = `Правильно: ${score}`;
+            } else {
+                clickedBtn.classList.add("wrong");
+                allButtons[correctIndex].classList.add("correct");
+                feedbackBox.innerHTML = `Ошибка. <br><strong>Правильный ответ:</strong> ${currentItem.options[correctIndex]}`;
+                feedbackBox.className = "feedback-panel wrong";
+                
+                // Сохраняем информацию об ошибке в лог
+                userErrorsLog.push({
+                    question: currentItem.q,
+                    userAnswer: currentItem.options[selectedIndex],
+                    correctAnswer: currentItem.options[correctIndex]
+                });
+            }
+
+            nextBtn.style.display = "inline-flex";
+            nextBtn.focus();
+        }
+
+        function function_next_or_finish() {
+             currentIndex++;
+             if (currentIndex < examDatabase.length) {
+                 loadQuestion();
+             } else {
+                 showFinalResults();
+             }
+        }
+
+        function nextQuestion() {
+            function_next_or_finish();
+        }
+
+        function showFinalResults() {
+            quizContainer.style.display = "none";
+            document.querySelector(".stats-line").style.display = "none";
+            document.querySelector(".progress-bar-container").style.display = "none";
+            resultContainer.style.display = "block";
+
+            document.getElementById("final-score").textContent = `${score} / ${examDatabase.length}`;
+            
+            const percentage = (score / examDatabase.length) * 100;
+            let comment = "Стоит повторить материал конспектов.";
+            if (percentage === 100) comment = "Великолепно! Ни одной ошибки. Вы полностью готовы к экзамену! 🎉";
+            else if (percentage >= 85) comment = "Отличный результат! Почти все ответы верны. У вас высокий уровень подготовки.";
+            else if (percentage >= 60) comment = "Хороший результат, но некоторые правила и переводы стоит закрепить.";
+
+            document.getElementById("final-comment").textContent = comment;
+            
+            // Если есть ошибки, отрисовываем их удобным списком для копирования
+            if (userErrorsLog.length > 0) {
+                let htmlContent = `<div class="errors-log-title">Список ошибок для анализа (${userErrorsLog.length}):</div>`;
+                
+                userErrorsLog.forEach((item, idx) => {
+                    htmlContent += `
+                        <div class="error-item">
+                            <div class="error-q">${idx + 1}. ${item.question}</div>
+                            <div class="error-line">❌ Мой ответ: <span class="text-red">${item.userAnswer}</span></div>
+                            <div class="error-line">✅ Верно: <span class="text-green">${item.correctAnswer}</span></div>
+                        </div>
+                    `;
+                });
+                errorsLogBox.innerHTML = htmlContent;
+            } else {
+                errorsLogBox.innerHTML = '<div class="errors-log-title" style="color: var(--green-text);">Ошибок нет! Ты идеален! ✨</div>';
+            }
+
+            document.querySelector(".btn-restart").focus();
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        window.addEventListener("keydown", function(event) {
+            if (event.key >= "1" && event.key <= "5") {
+                if (quizContainer.style.display !== "none" && !isAnswered) {
+                    const optionIndex = parseInt(event.key) - 1;
+                    const allButtons = optionsBox.querySelectorAll(".option-btn");
+                    if (allButtons[optionIndex]) {
+                        allButtons[optionIndex].click();
+                    }
+                }
+            }
+            
+            if (event.key === "Enter" || event.key === " ") {
+                if (quizContainer.style.display !== "none" && nextBtn.style.display !== "none") {
+                    event.preventDefault();
+                    nextQuestion();
+                }
+                else if (resultContainer.style.display === "block" && event.target.tagName !== "BUTTON") {
+                    // Перезапуск по Enter сработает только если фокус не на кнопках напрямую, во избежание конфликтов
+                    event.preventDefault();
+                    restartQuiz();
+                }
+            }
+        });
+
+        initQuiz();
+    </script>
+</body>
+</html>
